@@ -249,7 +249,148 @@ public:
 * Scalable architecture
 
 ---
+```cpp
+#include <iostream>
+#include <string>
 
+using namespace std;
+
+/*
+Abstract class (Abstraction Layer)
+
+1. Acts as a PUBLIC API for payment operations.
+2. Defines WHAT operations are available, not HOW they are implemented.
+3. Cannot be instantiated directly.
+4. Concrete payment providers (Stripe, PayPal, etc.) must implement this contract.
+
+Real-world meaning:
+- Your application only knows that it can authenticate, charge, and refund.
+- It does NOT know how encryption, HTTP calls, retries, or bank integrations work.
+*/
+class PaymentGateway {
+public:
+    virtual bool authenticate(const string& apiKey) = 0;
+    virtual bool charge(double amount, const string& currency) = 0;
+    virtual bool refund(const string& transactionId) = 0;
+    virtual ~PaymentGateway() {}
+};
+
+/*
+Concrete class (Implementation)
+
+1. Provides Stripe-specific payment logic.
+2. All Stripe API details are hidden inside this class.
+3. Can be replaced with another provider without changing business logic.
+
+Real-world meaning:
+- Stripe SDK / API implementation lives here.
+- Application code never depends on Stripe directly.
+*/
+class StripePayment : public PaymentGateway {
+private:
+    bool isAuthenticated;
+
+public:
+    StripePayment() {
+        isAuthenticated = false;
+    }
+
+    bool authenticate(const string& apiKey) override {
+        // Hidden Stripe authentication logic
+        isAuthenticated = true;
+        cout << "[Stripe] Authenticated using API Key." << endl;
+        return true;
+    }
+
+    bool charge(double amount, const string& currency) override {
+        if (!isAuthenticated) {
+            cout << "[Stripe] Authentication required before charging." << endl;
+            return false;
+        }
+        cout << "[Stripe] Charging " << amount << " " << currency << endl;
+        return true;
+    }
+
+    bool refund(const string& transactionId) override {
+        cout << "[Stripe] Refunding transaction ID: " << transactionId << endl;
+        return true;
+    }
+};
+
+/*
+Another concrete class (Alternative Provider)
+
+Demonstrates how easily we can switch vendors.
+No changes required in business logic.
+*/
+class PayPalPayment : public PaymentGateway {
+private:
+    bool sessionActive;
+
+public:
+    PayPalPayment() {
+        sessionActive = false;
+    }
+
+    bool authenticate(const string& apiKey) override {
+        sessionActive = true;
+        cout << "[PayPal] Session initialized." << endl;
+        return true;
+    }
+
+    bool charge(double amount, const string& currency) override {
+        if (!sessionActive) {
+            cout << "[PayPal] Session not active." << endl;
+            return false;
+        }
+        cout << "[PayPal] Processing payment of "
+             << amount << " " << currency << endl;
+        return true;
+    }
+
+    bool refund(const string& transactionId) override {
+        cout << "[PayPal] Reversing transaction ID: " << transactionId << endl;
+        return true;
+    }
+};
+
+/*
+Business Service Layer
+
+Depends ONLY on the abstraction (PaymentGateway),
+not on Stripe or PayPal.
+*/
+class OrderService {
+private:
+    PaymentGateway* paymentGateway;
+
+public:
+    OrderService(PaymentGateway* gateway) {
+        paymentGateway = gateway;
+    }
+
+    void placeOrder(double amount) {
+        paymentGateway->authenticate("SECRET_API_KEY");
+        paymentGateway->charge(amount, "USD");
+    }
+};
+
+/*
+Main Method
+*/
+int main() {
+
+    // Easily switch payment providers
+    PaymentGateway* gateway = new StripePayment();
+    // PaymentGateway* gateway = new PayPalPayment();
+
+    OrderService orderService(gateway);
+    orderService.placeOrder(499.99);
+
+    delete gateway;
+    return 0;
+}
+```__ 
 ## **7. Deep Dive: Pillar 2 – Encapsulation**
 
 ### **Definition**
