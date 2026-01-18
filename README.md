@@ -600,3 +600,294 @@ int main() {
 > Encapsulation protects *how it does it*.
 > Together, they form the foundation of scalable, maintainable, real-world software systems.
 
+
+# Lecture 3: Object-Oriented Programming (OOP)
+
+## Inheritance & Polymorphism
+
+### Real-World Systems: Payment Platforms & Ride-Hailing Apps
+
+---
+
+## 1. Inheritance
+
+### 1.1 What is Inheritance?
+
+**Inheritance models real-world “is-a” relationships.**
+
+* A child entity **inherits common properties and behaviors** from a parent.
+* The child can **extend or specialize** the parent.
+
+### Real-World Meaning
+
+* **StripePayment** *is a* **PaymentGateway**
+* **CarRide** *is a* **Ride**
+* **BikeRide** *is a* **Ride**
+
+👉 Inheritance avoids duplication and enforces consistent behavior.
+
+---
+
+## 1.2 Real-World Example: Payment System Hierarchy
+
+### Parent Class: `PaymentGateway` (Generic Payment Interface)
+
+#### Common Responsibilities
+
+* Authenticate provider
+* Charge customer
+* Refund transaction
+
+```cpp
+class PaymentGateway {
+public:
+    virtual bool authenticate(const std::string& apiKey) = 0;
+    virtual bool charge(double amount, const std::string& currency) = 0;
+    virtual bool refund(const std::string& transactionId) = 0;
+    virtual ~PaymentGateway() {}
+};
+```
+
+---
+
+### Child Classes (Concrete Providers)
+
+#### StripePayment
+
+* Uses Stripe APIs
+* Handles Stripe-specific authentication and retries
+
+#### PayPalPayment
+
+* Uses PayPal SDK
+* Handles PayPal session and transactions
+
+```cpp
+class StripePayment : public PaymentGateway { };
+class PayPalPayment : public PaymentGateway { };
+```
+
+### Real-World Impact
+
+* Business logic never changes
+* Payment vendors can be swapped easily
+
+---
+
+## 1.3 Ride-Hailing Example: Ride Hierarchy
+
+### Parent Class: `Ride`
+
+#### Common Attributes
+
+* `rideId`
+* `status`
+* `fare`
+
+#### Common Behaviors
+
+* `startRide()`
+* `completeRide()`
+* `calculateFare()`
+
+---
+
+### Child Classes
+
+#### CarRide
+
+* Fare based on distance + time
+
+#### BikeRide
+
+* Cheaper fare
+* No waiting charges
+
+```cpp
+class Ride {
+public:
+    virtual double calculateFare() = 0;
+};
+```
+
+---
+
+## 1.4 Access Specifiers in Inheritance
+
+| Access Modifier | Meaning in Real Systems  |
+| --------------- | ------------------------ |
+| `public`        | API exposed to services  |
+| `protected`     | Used by subclasses only  |
+| `private`       | Internal, sensitive data |
+
+❌ Payment secrets, fares, and IDs are **never public**
+
+---
+
+## 2. Polymorphism
+
+### 2.1 What is Polymorphism?
+
+**Same action → different behavior depending on object type.**
+
+---
+
+## 2.2 Real-World Scenarios
+
+### Scenario 1: Charging a Payment
+
+```cpp
+PaymentGateway* gateway;
+gateway->charge(500, "USD");
+```
+
+* Stripe → Card charge
+* PayPal → Wallet transfer
+* JazzCash → Mobile wallet debit
+
+👉 Same method, different execution
+
+---
+
+### Scenario 2: Fare Calculation
+
+```cpp
+Ride* ride;
+ride->calculateFare();
+```
+
+* CarRide → distance + time
+* BikeRide → distance only
+
+---
+
+## 2.3 Types of Polymorphism
+
+### 1️⃣ Static Polymorphism (Compile-Time)
+
+* Method Overloading
+
+### 2️⃣ Dynamic Polymorphism (Runtime)
+
+* Method Overriding
+
+---
+
+## 3. Static Polymorphism (Method Overloading)
+
+### Payment Example: Charge Variants
+
+```cpp
+class PaymentService {
+public:
+    void charge(double amount) {
+        cout << "Charging default currency" << endl;
+    }
+
+    void charge(double amount, string currency) {
+        cout << "Charging " << amount << " " << currency << endl;
+    }
+};
+```
+
+### Real-World Meaning
+
+* Charge in default currency
+* Charge in specified currency
+
+---
+
+## 4. Dynamic Polymorphism (Method Overriding)
+
+### Abstract Ride Class
+
+```cpp
+class Ride {
+public:
+    virtual double calculateFare() = 0;
+};
+```
+
+---
+
+### Car Ride Implementation
+
+```cpp
+class CarRide : public Ride {
+public:
+    double calculateFare() override {
+        return 300.0;
+    }
+};
+```
+
+---
+
+### Bike Ride Implementation
+
+```cpp
+class BikeRide : public Ride {
+public:
+    double calculateFare() override {
+        return 150.0;
+    }
+};
+```
+
+---
+
+### Runtime Behavior
+
+```cpp
+void generateInvoice(Ride* ride) {
+    cout << "Fare: " << ride->calculateFare() << endl;
+}
+```
+
+👉 Fare logic decided **at runtime**, not compile time
+
+---
+
+## 5. Combining OOP Pillars (Real-World Architecture)
+
+### Payment & Ride-Hailing Systems Use:
+
+| Pillar        | Example                   |
+| ------------- | ------------------------- |
+| Abstraction   | PaymentGateway, Ride      |
+| Encapsulation | Private transaction state |
+| Inheritance   | StripePayment, CarRide    |
+| Polymorphism  | charge(), calculateFare() |
+
+---
+
+## Additional Concepts
+
+### Protected Members
+
+* Shared logic for child classes
+* Not visible to external services
+
+### Operator Overloading (Homework)
+
+* Customize operators (`+`, `==`)
+* Available in C++
+* Restricted in Java/Python to prevent ambiguity
+
+---
+
+## Conclusion
+
+* **Inheritance** models real-world hierarchies
+* **Polymorphism** enables flexible, scalable systems
+* Payment & ride-hailing platforms rely heavily on both
+* Clean architecture depends on OOP pillars working together
+
+---
+
+## Homework
+
+1. Define **Operator Overloading**
+2. Why is operator overloading limited or restricted in Java & Python?
+3. Extend Ride system with `LuxuryRide` or `SharedRide`
+
