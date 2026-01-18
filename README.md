@@ -378,7 +378,7 @@ public:
 /*
 Main Method
 */
-```
+
 int main() {
 
     // Easily switch payment providers
@@ -390,7 +390,8 @@ int main() {
 
     delete gateway;
     return 0;
-}```
+}
+```
 __ 
 ## **7. Deep Dive: Pillar 2 – Encapsulation**
 
