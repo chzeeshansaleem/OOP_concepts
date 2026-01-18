@@ -903,123 +903,110 @@ void generateInvoice(Ride* ride) {
 using namespace std;
 
 /*
-We know that real world Objects show inheritance relationship where we
-have parent object and child object. child object have all the characters
-or behaviours that parent have plus some additional characters/behaviours.
-Like all cars in real world have a brand, model etc and can start, stop, 
-accelerate etc. But some specific cars like manual car have gear System
-while other specific cars like Electric cars have battery system.
+We know that real-world systems show inheritance relationships where we
+have a parent system and child systems.
 
-We represent this scenario of real world in programming by creating a parent class and
-defining all the characters(variables) or behaviours(methods) that all cars 
-have in parent class. Then we create different child classes that inherits 
-from this parent class and define only those characters and behaviours
-that are specific to them. Although objects of these child classes can 
-access or call parent class characters(variables) and behaviours(methods).
-Hence providing code reusability.
+In a Payment System:
+- All payment providers share common behavior (authenticate, charge, refund).
+- Some providers have additional features (wallet balance, card vault, etc.).
+
+We represent this real-world scenario in programming by:
+1. Creating a parent class that defines common payment behavior.
+2. Creating child classes that inherit from it and add provider-specific logic.
+3. This provides code reusability, scalability, and clean architecture.
 */
-class Car {
+
+// Parent Class (Generic Payment Gateway)
+class PaymentGateway {
 protected:
-    string brand;
-    string model;
-    bool isEngineOn;
-    int currentSpeed;
+    string providerName;
+    bool isAuthenticated;
 
 public:
-    Car(string b, string m) {
-        this->brand = b;
-        this->model = m;
-        isEngineOn = false;
-        currentSpeed = 0;
+    PaymentGateway(string name) {
+        providerName = name;
+        isAuthenticated = false;
     }
 
-    //Common methods for All cars.
-    void startEngine() {
-        isEngineOn = true;
-        cout << brand << " " << model << " : Engine started." << endl;
+    // Common behavior for all payment providers
+    void authenticate(string apiKey) {
+        isAuthenticated = true;
+        cout << "[" << providerName << "] Authentication successful." << endl;
     }
 
-    void stopEngine() {
-        isEngineOn = false;
-        currentSpeed = 0;
-        cout << brand << " " << model << " : Engine turned off." << endl;
-    }
-
-    void accelerate() { 
-        if (!isEngineOn) {
-            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+    void charge(double amount) {
+        if (!isAuthenticated) {
+            cout << "[" << providerName << "] Cannot charge. Authentication required." << endl;
             return;
         }
-        currentSpeed += 20;
-        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h" << endl;
+        cout << "[" << providerName << "] Charging amount: " << amount << endl;
     }
 
-    void brake() { 
-        currentSpeed -= 20;
-        if (currentSpeed < 0) currentSpeed = 0;
-        cout << brand << " " << model << " : Braking! Speed is now " << currentSpeed << " km/h" << endl;
+    void refund(string transactionId) {
+        cout << "[" << providerName << "] Refunding transaction: "
+             << transactionId << endl;
     }
 
-    virtual ~Car() {}
+    virtual ~PaymentGateway() {}
 };
 
-class ManualCar : public Car {  // Inherits from Car
+// Child Class: Card-Based Payment (Stripe)
+class StripePayment : public PaymentGateway {  // Inherits from PaymentGateway
 private:
-    int currentGear; //spcific to Manual Car.
+    string cardLast4Digits; // Specific to Stripe
 
 public:
-    ManualCar(string b, string m) : Car(b, m) {
-        currentGear = 0;
+    StripePayment() : PaymentGateway("Stripe") {
+        cardLast4Digits = "4242";
     }
 
-    //Specialized method for Manual Car
-    void shiftGear(int gear) {  
-        currentGear = gear;
-        cout << brand << " " << model << " : Shifted to gear " << currentGear << endl;
+    // Stripe-specific behavior
+    void saveCard() {
+        cout << "[Stripe] Card ending with "
+             << cardLast4Digits << " saved securely." << endl;
     }
 };
 
-class ElectricCar : public Car {  // Inherits from Car
+// Child Class: Wallet-Based Payment (PayPal)
+class PayPalPayment : public PaymentGateway {  // Inherits from PaymentGateway
 private:
-    int batteryLevel; //spcific to Electric Car.
+    double walletBalance; // Specific to PayPal
 
 public:
-    ElectricCar(string b, string m) : Car(b, m) {
-        batteryLevel = 100;
+    PayPalPayment() : PaymentGateway("PayPal") {
+        walletBalance = 1000.0;
     }
 
-    //specialized method for Electric Car
-    void chargeBattery() {  
-        batteryLevel = 100;
-        cout << brand << " " << model << " : Battery fully charged!" << endl;
+    // PayPal-specific behavior
+    void checkWalletBalance() {
+        cout << "[PayPal] Wallet balance: " << walletBalance << endl;
     }
 };
-    
-    
 
 // Main Method
 int main() {
 
-    ManualCar* myManualCar = new ManualCar("Suzuki", "WagonR");
-    myManualCar->startEngine();
-    myManualCar->shiftGear(1); //specific to manual car
-    myManualCar->accelerate();
-    myManualCar->brake();
-    myManualCar->stopEngine();
-    delete myManualCar;
+    // Stripe Payment Example
+    StripePayment* stripe = new StripePayment();
+    stripe->authenticate("STRIPE_API_KEY");
+    stripe->saveCard();              // Specific to Stripe
+    stripe->charge(250.75);
+    stripe->refund("TXN-STRIPE-101");
+    delete stripe;
 
     cout << "----------------------" << endl;
 
-    ElectricCar* myElectricCar = new ElectricCar("Tesla", "Model S");
-    myElectricCar->chargeBattery(); //specific to electric car
-    myElectricCar->startEngine(); 
-    myElectricCar->accelerate();
-    myElectricCar->brake();
-    myElectricCar->stopEngine();
-    delete myElectricCar; 
+    // PayPal Payment Example
+    PayPalPayment* paypal = new PayPalPayment();
+    paypal->authenticate("PAYPAL_API_KEY");
+    paypal->checkWalletBalance();    // Specific to PayPal
+    paypal->charge(99.99);
+    paypal->refund("TXN-PAYPAL-202");
+    delete paypal;
 
     return 0;
 }
+
 ```
 
 ## Dynamic Polymorphism
@@ -1031,144 +1018,116 @@ int main() {
 using namespace std;
 
 /*
-Dynamic Polymorphism in real life says that 2 Objects coming from same
-family will respond to same stimulus differently. Like in real world Manual
-car and Electric car will respond to accelerate() differently.
+Dynamic Polymorphism in real life means:
+Objects from the same family respond differently to the same action.
 
-To represent this in programming, we create a parent class that defines all
-characters and behaviours that are generic to all child classes and are also same in
-all child classes but make those methods abstract(virtual) that are generic to all
-child classes but all child class will behave differently. Then those child class
-will provide implementation details of these abstract methods the way they want.
-*/ 
-class Car {
+Real-world Payment System:
+- Stripe, PayPal, and Wallet payments all perform "charge()"
+- But internally, each provider processes payments differently
+
+To represent this in programming:
+1. Create a parent class defining common behavior.
+2. Declare methods as virtual (abstract) where behavior differs.
+3. Child classes override these methods with provider-specific logic.
+*/
+class PaymentGateway {
 protected:
-    string brand;
-    string model;
-    bool isEngineOn;
-    int currentSpeed;
+    string providerName;
+    bool isAuthenticated;
 
 public:
-    Car(string brand, string model) {
-        this->brand = brand;
-        this->model = model;
-        this->isEngineOn = false;
-        this->currentSpeed = 0;
+    PaymentGateway(string name) {
+        providerName = name;
+        isAuthenticated = false;
     }
 
-    //Common methods for All cars.
-    void startEngine() {
-        isEngineOn = true;
-        cout << brand << " " << model << " : Engine started." << endl;
+    // Common method
+    void authenticate() {
+        isAuthenticated = true;
+        cout << "[" << providerName << "] Authentication successful." << endl;
     }
 
-    void stopEngine() {
-        isEngineOn = false;
-        currentSpeed = 0;
-        cout << brand << " " << model << " : Engine turned off." << endl;
-    }
+    // Abstract methods for Dynamic Polymorphism
+    virtual void charge(double amount) = 0;
+    virtual void refund(string transactionId) = 0;
 
-    virtual void accelerate() = 0;  // Abstract method for Dynamic Polymorphism
-    virtual void brake() = 0;       // Abstract method for Dynamic Polymorphism
-    virtual ~Car() {}               // Virtual destructor
+    virtual ~PaymentGateway() {}
 };
 
-class ManualCar : public Car {
+// Stripe Payment Implementation
+class StripePayment : public PaymentGateway {
+public:
+    StripePayment() : PaymentGateway("Stripe") {}
+
+    // Overriding charge() - Dynamic Polymorphism
+    void charge(double amount) override {
+        if (!isAuthenticated) {
+            cout << "[Stripe] Cannot charge. Authentication required." << endl;
+            return;
+        }
+        cout << "[Stripe] Charging card with amount: " << amount << endl;
+    }
+
+    // Overriding refund() - Dynamic Polymorphism
+    void refund(string transactionId) override {
+        cout << "[Stripe] Refunding transaction ID: " << transactionId << endl;
+    }
+};
+
+// PayPal Payment Implementation
+class PayPalPayment : public PaymentGateway {
 private:
-    int currentGear;
+    double walletBalance;
 
 public:
-    ManualCar(string brand, string model) : Car(brand, model) {
-        this->currentGear = 0;
+    PayPalPayment() : PaymentGateway("PayPal") {
+        walletBalance = 500.0;
     }
 
-    //Specialized method for Manual Car
-    void shiftGear(int gear) {
-        currentGear = gear;
-        cout << brand << " " << model << " : Shifted to gear " << currentGear << endl;
-    }
-
-    // Overriding accelerate - Dynamic Polymorphism
-    void accelerate() {
-        if (!isEngineOn) {
-            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+    // Overriding charge() - Dynamic Polymorphism
+    void charge(double amount) override {
+        if (!isAuthenticated) {
+            cout << "[PayPal] Cannot charge. Authentication required." << endl;
             return;
         }
-        currentSpeed += 20;
-        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h" << endl;
+        if (walletBalance < amount) {
+            cout << "[PayPal] Insufficient wallet balance." << endl;
+            return;
+        }
+        walletBalance -= amount;
+        cout << "[PayPal] Charged " << amount
+             << ". Remaining balance: " << walletBalance << endl;
     }
 
-    // Overriding brake - Dynamic Polymorphism
-    void brake() {
-        currentSpeed -= 20;
-        if (currentSpeed < 0) currentSpeed = 0;
-        cout << brand << " " << model << " : Braking! Speed is now " << currentSpeed << " km/h" << endl;
+    // Overriding refund() - Dynamic Polymorphism
+    void refund(string transactionId) override {
+        cout << "[PayPal] Refunding wallet transaction: "
+             << transactionId << endl;
     }
 };
-
-class ElectricCar : public Car {
-private:
-    int batteryLevel;
-
-public:
-    ElectricCar(string brand, string model) : Car(brand, model) {
-        this->batteryLevel = 100;
-    }
-
-    //specialized method for Electric Car
-    void chargeBattery() {
-        batteryLevel = 100;
-        cout << brand << " " << model << " : Battery fully charged!" << endl;
-    }
-
-    // Overriding accelerate - Dynamic Polymorphism
-    void accelerate() {
-        if (!isEngineOn) {
-            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
-            return;
-        }
-        if (batteryLevel <= 0) {
-            cout << brand << " " << model << " : Battery dead! Cannot accelerate." << endl;
-            return;
-        }
-        batteryLevel -= 10;
-        currentSpeed += 15;
-        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h. Battery at " << batteryLevel << "%." << endl;
-    }
-
-    // Overriding brake - Dynamic Polymorphism
-    void brake() {
-        currentSpeed -= 15;
-        if (currentSpeed < 0) currentSpeed = 0;
-        cout << brand << " " << model << " : Regenerative braking! Speed is now " << currentSpeed << " km/h. Battery at " << batteryLevel << "%." << endl;
-    }
-};
-
 
 // Main function
 int main() {
-    Car* myManualCar = new ManualCar("Suzuki", "WagonR");
-    myManualCar->startEngine();
-    myManualCar->accelerate();
-    myManualCar->accelerate();
-    myManualCar->brake();
-    myManualCar->stopEngine();
+
+    // Runtime decision: Stripe
+    PaymentGateway* stripe = new StripePayment();
+    stripe->authenticate();
+    stripe->charge(250.50);
+    stripe->refund("STRIPE-TXN-101");
+    delete stripe;
 
     cout << "----------------------" << endl;
 
-    Car* myElectricCar = new ElectricCar("Tesla", "Model S");
-    myElectricCar->startEngine();
-    myElectricCar->accelerate();
-    myElectricCar->accelerate();
-    myElectricCar->brake();
-    myElectricCar->stopEngine();
-
-    // Cleanup
-    delete myManualCar;
-    delete myElectricCar;
+    // Runtime decision: PayPal
+    PaymentGateway* paypal = new PayPalPayment();
+    paypal->authenticate();
+    paypal->charge(120.00);
+    paypal->refund("PAYPAL-TXN-202");
+    delete paypal;
 
     return 0;
 }
+
 ```
 
 # Static Polymorphism
@@ -1180,252 +1139,191 @@ int main() {
 using namespace std;
 
 /*
-Static Polymorphism (Compile-time polymorphism) in real life says that
-the same action can behave differently depending on the input parameters.
-For example, a Manual car can accelerate by a fixed amount or by a
-specific amount you request. In programming, we achieve this via method
-overloading: multiple methods with the same name but different signatures.
+Static Polymorphism (Compile-time polymorphism) in real life says:
+The same action can behave differently depending on input parameters.
+
+Real-world Payment System:
+- You can charge a default amount.
+- Or charge a specific amount in a specific currency.
+- Compile-time method overloading achieves this behavior.
 */
 
-class ManualCar {
+class PaymentGateway {
 
 private:
-    string brand;
-    string model;
-    bool isEngineOn;
-    int currentSpeed;
-    int currentGear;
+    string providerName;
+    bool isAuthenticated;
 
 public:
-    ManualCar(string brand, string model) {
-        this->brand = brand;
-        this->model = model;
-        this->isEngineOn = false;
-        this->currentSpeed = 0;
-        this->currentGear = 0;
+    PaymentGateway(string name) {
+        providerName = name;
+        isAuthenticated = false;
     }
 
-    void startEngine() {
-        isEngineOn = true;
-        cout << brand << " " << model << " : Engine started." << endl;
+    void authenticate() {
+        isAuthenticated = true;
+        cout << "[" << providerName << "] Authentication successful." << endl;
     }
 
-    void stopEngine() {
-        isEngineOn = false;
-        currentSpeed = 0;
-        cout << brand << " " << model << " : Engine turned off." << endl;
-    }
-
-    // Overloading accelerate - Static Polymorphism
-    void accelerate() {
-        if (!isEngineOn) {
-            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+    // Overloaded charge methods - Static Polymorphism
+    void charge() {
+        if (!isAuthenticated) {
+            cout << "[" << providerName << "] Cannot charge. Authenticate first!" << endl;
             return;
         }
-        currentSpeed += 20;
-        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h" << endl;
+        cout << "[" << providerName << "] Charging default amount: $100" << endl;
     }
 
-    void accelerate(int speed) {
-        if (!isEngineOn) {
-            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+    void charge(double amount) {
+        if (!isAuthenticated) {
+            cout << "[" << providerName << "] Cannot charge. Authenticate first!" << endl;
             return;
         }
-        currentSpeed += speed;
-        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h" << endl;
+        cout << "[" << providerName << "] Charging amount: $" << amount << endl;
     }
 
-    void brake() {
-        currentSpeed -= 20;
-        if (currentSpeed < 0) currentSpeed = 0;
-        cout << brand << " " << model << " : Braking! Speed is now " << currentSpeed << " km/h" << endl;
+    void charge(double amount, const string& currency) {
+        if (!isAuthenticated) {
+            cout << "[" << providerName << "] Cannot charge. Authenticate first!" << endl;
+            return;
+        }
+        cout << "[" << providerName << "] Charging amount: " << amount
+             << " " << currency << endl;
     }
 
-    void shiftGear(int gear) {
-        currentGear = gear;
-        cout << brand << " " << model << " : Shifted to gear " << currentGear << endl;
+    void refund(const string& transactionId) {
+        cout << "[" << providerName << "] Refunding transaction: " << transactionId << endl;
     }
 };
 
 // Main function
 int main() {
-    ManualCar* myManualCar = new ManualCar("Suzuki", "WagonR");
-    myManualCar->startEngine();
-    myManualCar->accelerate();
-    myManualCar->accelerate(40);
-    myManualCar->brake();
-    myManualCar->stopEngine();
 
-    // Cleanup
-    delete myManualCar;
+    PaymentGateway* stripe = new PaymentGateway("Stripe");
+
+    stripe->authenticate();
+
+    // Static polymorphism in action
+    stripe->charge();                   // default amount
+    stripe->charge(250.50);             // specific amount
+    stripe->charge(499.99, "USD");      // specific amount & currency
+
+    stripe->refund("STRIPE-TXN-101");
+
+    delete stripe;
 
     return 0;
 }
+
 ```
 
 # Static And Dynamic Polymorphism
 ```cpp
 #include <iostream>
 #include <string>
-
 using namespace std;
 
-// Base Car class
-class Car {
+/*
+Combined Polymorphism Example: Payment System
+- Dynamic Polymorphism: Different payment gateways implement charge/refund differently.
+- Static Polymorphism: Same charge() method can accept different parameters (amount, currency).
+*/
+
+class PaymentGateway {
 protected:
-    string brand;
-    string model;
-    bool isEngineOn;
-    int currentSpeed;
+    string providerName;
+    bool isAuthenticated;
 
 public:
-    Car(string brand, string model) {
-        this->brand = brand;
-        this->model = model;
-        this->isEngineOn = false;
-        this->currentSpeed = 0;
+    PaymentGateway(string name) {
+        providerName = name;
+        isAuthenticated = false;
     }
 
-    //Common methods for All cars.
-    void startEngine() {
-        isEngineOn = true;
-        cout << brand << " " << model << " : Engine started." << endl;
+    void authenticate() {
+        isAuthenticated = true;
+        cout << "[" << providerName << "] Authenticated successfully." << endl;
     }
 
-    void stopEngine() {
-        isEngineOn = false;
-        currentSpeed = 0;
-        cout << brand << " " << model << " : Engine turned off." << endl;
-    }
+    // Dynamic polymorphism: Derived classes will implement these differently
+    virtual void charge() = 0;             
+    virtual void charge(double amount) = 0;   
+    virtual void charge(double amount, const string &currency) = 0;
+    virtual void refund(const string &transactionId) = 0;
 
-    virtual void accelerate() = 0;  // Abstract method for Dynamic Polymorphism
-
-    virtual void accelerate(int speed) = 0;  //Abstract method for Static Polymorphism
-
-    virtual void brake() = 0;       // Abstract method for Dynamic Polymorphism
-    
-    virtual ~Car() {}               // Virtual destructor
+    virtual ~PaymentGateway() {}
 };
 
-class ManualCar : public Car {
-private:
-    int currentGear;
-
+class StripePayment : public PaymentGateway {
 public:
-    ManualCar(string brand, string model) : Car(brand, model) {
-        this->currentGear = 0;
+    StripePayment() : PaymentGateway("Stripe") {}
+
+    void charge() override {
+        if (!isAuthenticated) { cout << "[Stripe] Authenticate first!\n"; return; }
+        cout << "[Stripe] Charging default amount $100" << endl;
     }
 
-    //Specialized method for Manual Car
-    void shiftGear(int gear) {
-        currentGear = gear;
-        cout << brand << " " << model << " : Shifted to gear " << currentGear << endl;
+    void charge(double amount) override {
+        if (!isAuthenticated) { cout << "[Stripe] Authenticate first!\n"; return; }
+        cout << "[Stripe] Charging amount $" << amount << endl;
     }
 
-    // Overriding accelerate - Dynamic Polymorphism
-    void accelerate() {
-        if (!isEngineOn) {
-            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
-            return;
-        }
-        currentSpeed += 20;
-        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h" << endl;
+    void charge(double amount, const string &currency) override {
+        if (!isAuthenticated) { cout << "[Stripe] Authenticate first!\n"; return; }
+        cout << "[Stripe] Charging amount " << amount << " " << currency << endl;
     }
 
-    //overriding and overloading accelerate at the same time.
-    void accelerate(int speed) {
-        if (!isEngineOn) {
-            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
-            return;
-        }
-        currentSpeed += speed;
-        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h" << endl;
-    }
-
-    // Overriding brake - Dynamic Polymorphism
-    void brake() {
-        currentSpeed -= 20;
-        if (currentSpeed < 0) currentSpeed = 0;
-        cout << brand << " " << model << " : Braking! Speed is now " << currentSpeed << " km/h" << endl;
+    void refund(const string &transactionId) override {
+        cout << "[Stripe] Refunding transaction " << transactionId << endl;
     }
 };
 
-class ElectricCar : public Car {
-private:
-    int batteryLevel;
-
+class PayPalPayment : public PaymentGateway {
 public:
-    ElectricCar(string brand, string model) : Car(brand, model) {
-        this->batteryLevel = 100;
+    PayPalPayment() : PaymentGateway("PayPal") {}
+
+    void charge() override {
+        if (!isAuthenticated) { cout << "[PayPal] Authenticate first!\n"; return; }
+        cout << "[PayPal] Charging default amount $100" << endl;
     }
 
-    //specialized method for Electric Car
-    void chargeBattery() {
-        batteryLevel = 100;
-        cout << brand << " " << model << " : Battery fully charged!" << endl;
+    void charge(double amount) override {
+        if (!isAuthenticated) { cout << "[PayPal] Authenticate first!\n"; return; }
+        cout << "[PayPal] Charging amount $" << amount << endl;
     }
 
-    // Overriding accelerate - Dynamic Polymorphism
-    void accelerate() {
-        if (!isEngineOn) {
-            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
-            return;
-        }
-        if (batteryLevel <= 0) {
-            cout << brand << " " << model << " : Battery dead! Cannot accelerate." << endl;
-            return;
-        }
-        batteryLevel -= 10;
-        currentSpeed += 15;
-        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h. Battery at " << batteryLevel << "%." << endl;
+    void charge(double amount, const string &currency) override {
+        if (!isAuthenticated) { cout << "[PayPal] Authenticate first!\n"; return; }
+        cout << "[PayPal] Charging amount " << amount << " " << currency << endl;
     }
 
-    // Overriding accelerate - Dynamic Polymorphism
-    void accelerate(int speed) {
-        if (!isEngineOn) {
-            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
-            return;
-        }
-        if (batteryLevel <= 0) {
-            cout << brand << " " << model << " : Battery dead! Cannot accelerate." << endl;
-            return;
-        }
-        batteryLevel -= 10 + speed;
-        currentSpeed += speed;
-        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h. Battery at " << batteryLevel << "%." << endl;
-    }
-
-    // Overriding brake - Dynamic Polymorphism
-    void brake() {
-        currentSpeed -= 15;
-        if (currentSpeed < 0) currentSpeed = 0;
-        cout << brand << " " << model << " : Regenerative braking! Speed is now " << currentSpeed << " km/h. Battery at " << batteryLevel << "%." << endl;
+    void refund(const string &transactionId) override {
+        cout << "[PayPal] Refunding transaction " << transactionId << endl;
     }
 };
 
 // Main function
 int main() {
-    Car* myManualCar = new ManualCar("Ford", "Mustang");
-    myManualCar->startEngine();
-    myManualCar->accelerate();
-    myManualCar->accelerate();
-    myManualCar->brake();
-    myManualCar->stopEngine();
+    PaymentGateway* stripe = new StripePayment();
+    stripe->authenticate();
+    stripe->charge();
+    stripe->charge(250.75);
+    stripe->charge(499.99, "USD");
+    stripe->refund("TXN-STR-101");
 
     cout << "----------------------" << endl;
 
-    Car* myElectricCar = new ElectricCar("Tesla", "Model S");
-    myElectricCar->startEngine();
-    myElectricCar->accelerate();
-    myElectricCar->accelerate();
-    myElectricCar->brake();
-    myElectricCar->stopEngine();
+    PaymentGateway* paypal = new PayPalPayment();
+    paypal->authenticate();
+    paypal->charge();
+    paypal->charge(199.99);
+    paypal->charge(349.50, "EUR");
+    paypal->refund("TXN-PP-202");
 
-    // Cleanup
-    delete myManualCar;
-    delete myElectricCar;
-
+    delete stripe;
+    delete paypal;
     return 0;
 }
+
 ```
 
