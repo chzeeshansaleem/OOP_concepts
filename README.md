@@ -470,7 +470,121 @@ public:
 ```
 
 ---
+```cpp
+#include <iostream>
+#include <string>
 
+using namespace std;
+
+/*
+Encapsulation says two important things:
+
+1. An object's data (state) and behavior (methods) are bundled together
+   inside a single unit (class).
+2. Direct access to sensitive data is restricted to ensure data security.
+
+In real-world systems (e.g., Payment Systems):
+- You can view payment status.
+- You cannot directly modify payment amount or transaction state.
+- All changes must go through controlled methods.
+*/
+class Payment {
+private:
+    // Sensitive data (NOT directly accessible)
+    string transactionId;
+    double amount;
+    bool isPaid;
+    string paymentProvider;
+
+public:
+    // Constructor initializes payment safely
+    Payment(string txnId, double amt, string provider) {
+        transactionId = txnId;
+        amount = amt;
+        paymentProvider = provider;
+        isPaid = false;
+    }
+
+    /*
+    Getter methods
+    - Allow read-only access
+    - Prevent direct manipulation
+    */
+    double getAmount() const {
+        return amount;
+    }
+
+    string getTransactionId() const {
+        return transactionId;
+    }
+
+    bool getPaymentStatus() const {
+        return isPaid;
+    }
+
+    string getPaymentProvider() const {
+        return paymentProvider;
+    }
+
+    /*
+    Setter-like behavior with validation
+    - Controls how state can change
+    - Prevents invalid operations
+    */
+    void processPayment() {
+        if (isPaid) {
+            cout << "[Payment] Transaction already completed." << endl;
+            return;
+        }
+        isPaid = true;
+        cout << "[Payment] Payment of " << amount
+             << " processed successfully via "
+             << paymentProvider << endl;
+    }
+
+    void refundPayment() {
+        if (!isPaid) {
+            cout << "[Payment] Cannot refund unpaid transaction." << endl;
+            return;
+        }
+        isPaid = false;
+        cout << "[Payment] Refund successful for transaction "
+             << transactionId << endl;
+    }
+
+    /*
+    Note:
+    There is NO setter for amount or transactionId.
+    This ensures data integrity.
+    */
+};
+
+// Main Method
+int main() {
+
+    Payment* payment = new Payment("TXN-982341", 299.99, "Stripe");
+
+    // Process payment
+    payment->processPayment();
+
+    // ❌ NOT ALLOWED (Encapsulation protects internal state)
+    // payment->amount = 10000;
+    // payment->isPaid = false;
+
+    cout << "Transaction ID: " << payment->getTransactionId() << endl;
+    cout << "Amount: " << payment->getAmount() << endl;
+    cout << "Payment Status: "
+         << (payment->getPaymentStatus() ? "PAID" : "NOT PAID") << endl;
+
+    // Refund payment
+    payment->refundPayment();
+
+    delete payment;
+    return 0;
+}
+
+```
+---
 ## **7.5 Encapsulation Benefits**
 
 1. **Robustness** – prevents invalid state
