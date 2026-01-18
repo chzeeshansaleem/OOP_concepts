@@ -891,3 +891,541 @@ void generateInvoice(Ride* ride) {
 2. Why is operator overloading limited or restricted in Java & Python?
 3. Extend Ride system with `LuxuryRide` or `SharedRide`
 
+
+## Example Code 
+
+## Inheritance
+--
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+/*
+We know that real world Objects show inheritance relationship where we
+have parent object and child object. child object have all the characters
+or behaviours that parent have plus some additional characters/behaviours.
+Like all cars in real world have a brand, model etc and can start, stop, 
+accelerate etc. But some specific cars like manual car have gear System
+while other specific cars like Electric cars have battery system.
+
+We represent this scenario of real world in programming by creating a parent class and
+defining all the characters(variables) or behaviours(methods) that all cars 
+have in parent class. Then we create different child classes that inherits 
+from this parent class and define only those characters and behaviours
+that are specific to them. Although objects of these child classes can 
+access or call parent class characters(variables) and behaviours(methods).
+Hence providing code reusability.
+*/
+class Car {
+protected:
+    string brand;
+    string model;
+    bool isEngineOn;
+    int currentSpeed;
+
+public:
+    Car(string b, string m) {
+        this->brand = b;
+        this->model = m;
+        isEngineOn = false;
+        currentSpeed = 0;
+    }
+
+    //Common methods for All cars.
+    void startEngine() {
+        isEngineOn = true;
+        cout << brand << " " << model << " : Engine started." << endl;
+    }
+
+    void stopEngine() {
+        isEngineOn = false;
+        currentSpeed = 0;
+        cout << brand << " " << model << " : Engine turned off." << endl;
+    }
+
+    void accelerate() { 
+        if (!isEngineOn) {
+            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+            return;
+        }
+        currentSpeed += 20;
+        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h" << endl;
+    }
+
+    void brake() { 
+        currentSpeed -= 20;
+        if (currentSpeed < 0) currentSpeed = 0;
+        cout << brand << " " << model << " : Braking! Speed is now " << currentSpeed << " km/h" << endl;
+    }
+
+    virtual ~Car() {}
+};
+
+class ManualCar : public Car {  // Inherits from Car
+private:
+    int currentGear; //spcific to Manual Car.
+
+public:
+    ManualCar(string b, string m) : Car(b, m) {
+        currentGear = 0;
+    }
+
+    //Specialized method for Manual Car
+    void shiftGear(int gear) {  
+        currentGear = gear;
+        cout << brand << " " << model << " : Shifted to gear " << currentGear << endl;
+    }
+};
+
+class ElectricCar : public Car {  // Inherits from Car
+private:
+    int batteryLevel; //spcific to Electric Car.
+
+public:
+    ElectricCar(string b, string m) : Car(b, m) {
+        batteryLevel = 100;
+    }
+
+    //specialized method for Electric Car
+    void chargeBattery() {  
+        batteryLevel = 100;
+        cout << brand << " " << model << " : Battery fully charged!" << endl;
+    }
+};
+    
+    
+
+// Main Method
+int main() {
+
+    ManualCar* myManualCar = new ManualCar("Suzuki", "WagonR");
+    myManualCar->startEngine();
+    myManualCar->shiftGear(1); //specific to manual car
+    myManualCar->accelerate();
+    myManualCar->brake();
+    myManualCar->stopEngine();
+    delete myManualCar;
+
+    cout << "----------------------" << endl;
+
+    ElectricCar* myElectricCar = new ElectricCar("Tesla", "Model S");
+    myElectricCar->chargeBattery(); //specific to electric car
+    myElectricCar->startEngine(); 
+    myElectricCar->accelerate();
+    myElectricCar->brake();
+    myElectricCar->stopEngine();
+    delete myElectricCar; 
+
+    return 0;
+}
+```
+--
+## Dynamic Polymorphism
+--
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+/*
+Dynamic Polymorphism in real life says that 2 Objects coming from same
+family will respond to same stimulus differently. Like in real world Manual
+car and Electric car will respond to accelerate() differently.
+
+To represent this in programming, we create a parent class that defines all
+characters and behaviours that are generic to all child classes and are also same in
+all child classes but make those methods abstract(virtual) that are generic to all
+child classes but all child class will behave differently. Then those child class
+will provide implementation details of these abstract methods the way they want.
+*/ 
+class Car {
+protected:
+    string brand;
+    string model;
+    bool isEngineOn;
+    int currentSpeed;
+
+public:
+    Car(string brand, string model) {
+        this->brand = brand;
+        this->model = model;
+        this->isEngineOn = false;
+        this->currentSpeed = 0;
+    }
+
+    //Common methods for All cars.
+    void startEngine() {
+        isEngineOn = true;
+        cout << brand << " " << model << " : Engine started." << endl;
+    }
+
+    void stopEngine() {
+        isEngineOn = false;
+        currentSpeed = 0;
+        cout << brand << " " << model << " : Engine turned off." << endl;
+    }
+
+    virtual void accelerate() = 0;  // Abstract method for Dynamic Polymorphism
+    virtual void brake() = 0;       // Abstract method for Dynamic Polymorphism
+    virtual ~Car() {}               // Virtual destructor
+};
+
+class ManualCar : public Car {
+private:
+    int currentGear;
+
+public:
+    ManualCar(string brand, string model) : Car(brand, model) {
+        this->currentGear = 0;
+    }
+
+    //Specialized method for Manual Car
+    void shiftGear(int gear) {
+        currentGear = gear;
+        cout << brand << " " << model << " : Shifted to gear " << currentGear << endl;
+    }
+
+    // Overriding accelerate - Dynamic Polymorphism
+    void accelerate() {
+        if (!isEngineOn) {
+            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+            return;
+        }
+        currentSpeed += 20;
+        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h" << endl;
+    }
+
+    // Overriding brake - Dynamic Polymorphism
+    void brake() {
+        currentSpeed -= 20;
+        if (currentSpeed < 0) currentSpeed = 0;
+        cout << brand << " " << model << " : Braking! Speed is now " << currentSpeed << " km/h" << endl;
+    }
+};
+
+class ElectricCar : public Car {
+private:
+    int batteryLevel;
+
+public:
+    ElectricCar(string brand, string model) : Car(brand, model) {
+        this->batteryLevel = 100;
+    }
+
+    //specialized method for Electric Car
+    void chargeBattery() {
+        batteryLevel = 100;
+        cout << brand << " " << model << " : Battery fully charged!" << endl;
+    }
+
+    // Overriding accelerate - Dynamic Polymorphism
+    void accelerate() {
+        if (!isEngineOn) {
+            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+            return;
+        }
+        if (batteryLevel <= 0) {
+            cout << brand << " " << model << " : Battery dead! Cannot accelerate." << endl;
+            return;
+        }
+        batteryLevel -= 10;
+        currentSpeed += 15;
+        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h. Battery at " << batteryLevel << "%." << endl;
+    }
+
+    // Overriding brake - Dynamic Polymorphism
+    void brake() {
+        currentSpeed -= 15;
+        if (currentSpeed < 0) currentSpeed = 0;
+        cout << brand << " " << model << " : Regenerative braking! Speed is now " << currentSpeed << " km/h. Battery at " << batteryLevel << "%." << endl;
+    }
+};
+
+
+// Main function
+int main() {
+    Car* myManualCar = new ManualCar("Suzuki", "WagonR");
+    myManualCar->startEngine();
+    myManualCar->accelerate();
+    myManualCar->accelerate();
+    myManualCar->brake();
+    myManualCar->stopEngine();
+
+    cout << "----------------------" << endl;
+
+    Car* myElectricCar = new ElectricCar("Tesla", "Model S");
+    myElectricCar->startEngine();
+    myElectricCar->accelerate();
+    myElectricCar->accelerate();
+    myElectricCar->brake();
+    myElectricCar->stopEngine();
+
+    // Cleanup
+    delete myManualCar;
+    delete myElectricCar;
+
+    return 0;
+}
+```
+--
+# Static Polymorphism
+--
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+/*
+Static Polymorphism (Compile-time polymorphism) in real life says that
+the same action can behave differently depending on the input parameters.
+For example, a Manual car can accelerate by a fixed amount or by a
+specific amount you request. In programming, we achieve this via method
+overloading: multiple methods with the same name but different signatures.
+*/
+
+class ManualCar {
+
+private:
+    string brand;
+    string model;
+    bool isEngineOn;
+    int currentSpeed;
+    int currentGear;
+
+public:
+    ManualCar(string brand, string model) {
+        this->brand = brand;
+        this->model = model;
+        this->isEngineOn = false;
+        this->currentSpeed = 0;
+        this->currentGear = 0;
+    }
+
+    void startEngine() {
+        isEngineOn = true;
+        cout << brand << " " << model << " : Engine started." << endl;
+    }
+
+    void stopEngine() {
+        isEngineOn = false;
+        currentSpeed = 0;
+        cout << brand << " " << model << " : Engine turned off." << endl;
+    }
+
+    // Overloading accelerate - Static Polymorphism
+    void accelerate() {
+        if (!isEngineOn) {
+            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+            return;
+        }
+        currentSpeed += 20;
+        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h" << endl;
+    }
+
+    void accelerate(int speed) {
+        if (!isEngineOn) {
+            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+            return;
+        }
+        currentSpeed += speed;
+        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h" << endl;
+    }
+
+    void brake() {
+        currentSpeed -= 20;
+        if (currentSpeed < 0) currentSpeed = 0;
+        cout << brand << " " << model << " : Braking! Speed is now " << currentSpeed << " km/h" << endl;
+    }
+
+    void shiftGear(int gear) {
+        currentGear = gear;
+        cout << brand << " " << model << " : Shifted to gear " << currentGear << endl;
+    }
+};
+
+// Main function
+int main() {
+    ManualCar* myManualCar = new ManualCar("Suzuki", "WagonR");
+    myManualCar->startEngine();
+    myManualCar->accelerate();
+    myManualCar->accelerate(40);
+    myManualCar->brake();
+    myManualCar->stopEngine();
+
+    // Cleanup
+    delete myManualCar;
+
+    return 0;
+}
+```
+--
+# Static And Dynamic Polymorphism
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+// Base Car class
+class Car {
+protected:
+    string brand;
+    string model;
+    bool isEngineOn;
+    int currentSpeed;
+
+public:
+    Car(string brand, string model) {
+        this->brand = brand;
+        this->model = model;
+        this->isEngineOn = false;
+        this->currentSpeed = 0;
+    }
+
+    //Common methods for All cars.
+    void startEngine() {
+        isEngineOn = true;
+        cout << brand << " " << model << " : Engine started." << endl;
+    }
+
+    void stopEngine() {
+        isEngineOn = false;
+        currentSpeed = 0;
+        cout << brand << " " << model << " : Engine turned off." << endl;
+    }
+
+    virtual void accelerate() = 0;  // Abstract method for Dynamic Polymorphism
+
+    virtual void accelerate(int speed) = 0;  //Abstract method for Static Polymorphism
+
+    virtual void brake() = 0;       // Abstract method for Dynamic Polymorphism
+    
+    virtual ~Car() {}               // Virtual destructor
+};
+
+class ManualCar : public Car {
+private:
+    int currentGear;
+
+public:
+    ManualCar(string brand, string model) : Car(brand, model) {
+        this->currentGear = 0;
+    }
+
+    //Specialized method for Manual Car
+    void shiftGear(int gear) {
+        currentGear = gear;
+        cout << brand << " " << model << " : Shifted to gear " << currentGear << endl;
+    }
+
+    // Overriding accelerate - Dynamic Polymorphism
+    void accelerate() {
+        if (!isEngineOn) {
+            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+            return;
+        }
+        currentSpeed += 20;
+        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h" << endl;
+    }
+
+    //overriding and overloading accelerate at the same time.
+    void accelerate(int speed) {
+        if (!isEngineOn) {
+            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+            return;
+        }
+        currentSpeed += speed;
+        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h" << endl;
+    }
+
+    // Overriding brake - Dynamic Polymorphism
+    void brake() {
+        currentSpeed -= 20;
+        if (currentSpeed < 0) currentSpeed = 0;
+        cout << brand << " " << model << " : Braking! Speed is now " << currentSpeed << " km/h" << endl;
+    }
+};
+
+class ElectricCar : public Car {
+private:
+    int batteryLevel;
+
+public:
+    ElectricCar(string brand, string model) : Car(brand, model) {
+        this->batteryLevel = 100;
+    }
+
+    //specialized method for Electric Car
+    void chargeBattery() {
+        batteryLevel = 100;
+        cout << brand << " " << model << " : Battery fully charged!" << endl;
+    }
+
+    // Overriding accelerate - Dynamic Polymorphism
+    void accelerate() {
+        if (!isEngineOn) {
+            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+            return;
+        }
+        if (batteryLevel <= 0) {
+            cout << brand << " " << model << " : Battery dead! Cannot accelerate." << endl;
+            return;
+        }
+        batteryLevel -= 10;
+        currentSpeed += 15;
+        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h. Battery at " << batteryLevel << "%." << endl;
+    }
+
+    // Overriding accelerate - Dynamic Polymorphism
+    void accelerate(int speed) {
+        if (!isEngineOn) {
+            cout << brand << " " << model << " : Cannot accelerate! Engine is off." << endl;
+            return;
+        }
+        if (batteryLevel <= 0) {
+            cout << brand << " " << model << " : Battery dead! Cannot accelerate." << endl;
+            return;
+        }
+        batteryLevel -= 10 + speed;
+        currentSpeed += speed;
+        cout << brand << " " << model << " : Accelerating to " << currentSpeed << " km/h. Battery at " << batteryLevel << "%." << endl;
+    }
+
+    // Overriding brake - Dynamic Polymorphism
+    void brake() {
+        currentSpeed -= 15;
+        if (currentSpeed < 0) currentSpeed = 0;
+        cout << brand << " " << model << " : Regenerative braking! Speed is now " << currentSpeed << " km/h. Battery at " << batteryLevel << "%." << endl;
+    }
+};
+
+// Main function
+int main() {
+    Car* myManualCar = new ManualCar("Ford", "Mustang");
+    myManualCar->startEngine();
+    myManualCar->accelerate();
+    myManualCar->accelerate();
+    myManualCar->brake();
+    myManualCar->stopEngine();
+
+    cout << "----------------------" << endl;
+
+    Car* myElectricCar = new ElectricCar("Tesla", "Model S");
+    myElectricCar->startEngine();
+    myElectricCar->accelerate();
+    myElectricCar->accelerate();
+    myElectricCar->brake();
+    myElectricCar->stopEngine();
+
+    // Cleanup
+    delete myManualCar;
+    delete myElectricCar;
+
+    return 0;
+}
+```
+
