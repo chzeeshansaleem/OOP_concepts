@@ -895,7 +895,7 @@ void generateInvoice(Ride* ride) {
 ## Example Code 
 
 ## Inheritance
---
+
 ```cpp
 #include <iostream>
 #include <string>
@@ -1021,9 +1021,9 @@ int main() {
     return 0;
 }
 ```
---
+
 ## Dynamic Polymorphism
---
+
 ```cpp
 #include <iostream>
 #include <string>
@@ -1170,9 +1170,9 @@ int main() {
     return 0;
 }
 ```
---
+
 # Static Polymorphism
---
+
 ```cpp
 #include <iostream>
 #include <string>
@@ -1262,7 +1262,7 @@ int main() {
     return 0;
 }
 ```
---
+
 # Static And Dynamic Polymorphism
 ```cpp
 #include <iostream>
